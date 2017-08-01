@@ -31,27 +31,31 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
     Class class = NSClassFromString(@"ViewController");
     id objc = [class new];
     self.objc = objc;
+    
     switch (sortType) {
         case MBSelectionSort:
-            [self mb_selectionSortComparator:comparator];
+            [self mb_selectionSort];
             break;
         case MBBubbleSort:
-            [self mb_bubbleSortComparator:comparator];
+            [self mb_bubbleSort];
             break;
         case MBInsertionSort:
-            [self mb_insertionSortComparator:comparator];
+            [self mb_insertionSort];
             break;
         case MBMergeSort:
-            [self mb_mergeSortComparator:comparator];
+            [self mb_mergeSort];
             break;
         case MBQuickSort:
-            [self mb_quickSortComparator:comparator];
+            [self mb_quickSort];
             break;
         case MBIdenticalQuickSort:
-            [self mb_identicalQuickSortComparator:comparator];
+            [self mb_identicalQuickSort];
             break;
         case MBQuick3WaysSort:
-            [self mb_quick3WaysSortComparator:comparator];
+            [self mb_quick3WaysSort];
+            break;
+        case MBHeapSort:
+            [self mb_heapSort];
             break;
         default:
             break;
@@ -61,22 +65,22 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
 #pragma mark - 私有排序算法
 
 #pragma mark - /**选择排序*/
-- (void)mb_selectionSortComparator:(MBSortComparator )comparator{
+- (void)mb_selectionSort{
     for (int i = 0; i < self.count; i++) {
         for (int j = i + 1; j < self.count ; j++) {
-            if (comparator(self[i],self[j]) == NSOrderedDescending) {
+            if (self.comparator(self[i],self[j]) == NSOrderedDescending) {
                 [self mb_exchangeWithIndexA:i  indexB:j];
             }
         }
     }
 }
 #pragma mark - /**冒泡排序*/
-- (void)mb_bubbleSortComparator:(MBSortComparator )comparator{
+- (void)mb_bubbleSort{
     bool swapped;
     do {
         swapped = false;
         for (int i = 1; i < self.count; i++) {
-            if (comparator(self[i - 1],self[i]) == NSOrderedDescending) {
+            if (self.comparator(self[i - 1],self[i]) == NSOrderedDescending) {
                 swapped = true;
                 [self mb_exchangeWithIndexA:i  indexB:i- 1];
             }
@@ -84,11 +88,11 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
     } while (swapped);
 }
 #pragma mark - /**插入排序*/
-- (void)mb_insertionSortComparator:(MBSortComparator )comparator{
+- (void)mb_insertionSort{
     for (int i = 0; i < self.count; i++) {
         id e = self[i];
         int j;
-        for (j = i; j > 0 && comparator(self[j - 1],e) == NSOrderedDescending; j--) {
+        for (j = i; j > 0 && self.comparator(self[j - 1],e) == NSOrderedDescending; j--) {
             [self mb_exchangeWithIndexA:j  indexB:j- 1];
         }
         self[j] = e;
@@ -96,7 +100,7 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
 }
 
 #pragma mark - /**归并排序 自顶向下*/
-- (void)mb_mergeSortComparator:(MBSortComparator )comparator{
+- (void)mb_mergeSort{
     [self mb_mergeSortArray:self LeftIndex:0 rightIndex:(int)self.count - 1];
 }
 - (void)mb_mergeSortArray:(NSMutableArray *)array LeftIndex:(int )l rightIndex:(int)r{
@@ -135,6 +139,7 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
             self[k] = aux[j - l];
             j++;
         }
+        
         NSMutableArray *mutArray = [NSMutableArray array];
         [self enumerateObjectsUsingBlock:^(MBBarView *  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             [mutArray addObject:[NSString stringWithFormat:@"%f",obj.frame.size.height]];
@@ -145,7 +150,7 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
 
 }
 #pragma mark - /**快速排序*/
-- (void)mb_quickSortComparator:(MBSortComparator )comparator{
+- (void)mb_quickSort{
     //要特别注意边界的情况
     [self mb_quickSort:self indexL:0 indexR:(int)self.count - 1];
 }
@@ -178,8 +183,8 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
     return j;
 }
 #pragma mark - /**双路快排*/
-///
-- (void)mb_identicalQuickSortComparator:(MBSortComparator )comparator{
+///近乎有序数组使用双路排序
+- (void)mb_identicalQuickSort{
     //要特别注意边界的情况
     [self mb_quickSort:self indexL:0 indexR:(int)self.count - 1];
 }
@@ -218,7 +223,7 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
 
 #pragma mark - /**三路快排*/
 //对于包含有大量重复数据的数组, 三路快排有巨大的优势
-- (void)mb_quick3WaysSortComparator:(MBSortComparator )comparator{
+- (void)mb_quick3WaysSort{
     //要特别注意边界的情况
     [self mb_quick3WaysSort:self indexL:0 indexR:(int)self.count - 1];
 }
@@ -235,9 +240,7 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
     
     int lt = l; // array[l+1...lt] < v
     int gt = r + 1; // array[gt...r] > v
-    NSLog(@"r:%d,gt:%d",r,gt);
     int i = l + 1; // array[lt+1...i) == v
-    
     
     while (i < gt) {
         if ( [self compareWithBarOne:array[i] andBarTwo:v] == NSOrderedAscending) {
@@ -262,6 +265,13 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
     [self mb_quick3WaysSort:array indexL:gt indexR:r];
     
 }
+#pragma mark - /**堆排序*/
+///借助heapify过程创建堆
+- (void)mb_heapSort{
+    
+}
+
+
 
 #pragma mark - Private
 - (void)printArray{
