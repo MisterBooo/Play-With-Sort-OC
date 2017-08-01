@@ -27,8 +27,8 @@
     if (!_label) {
         _label = [UILabel new];
         _label.textAlignment = NSTextAlignmentCenter;
-        _label.textColor = [UIColor orangeColor];
-        _label.font = [UIFont systemFontOfSize:10];
+        _label.textColor = [UIColor whiteColor];
+        _label.font = [UIFont systemFontOfSize:12];
         [self addSubview:_label];
     }
     return _label;

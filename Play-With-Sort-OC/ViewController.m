@@ -44,10 +44,6 @@
     [self onReset];
 }
 
-
-
-
-
 - (void)onSegmentControlChanged:(UISegmentedControl *)segmentControl {
     [self onReset];
 }
@@ -69,29 +65,38 @@
     [self onReset];
 }
 
-- (void)setupBarArrayHeight:(NSMutableArray *)mutArray{
-//    NSLog(@"mutArray:%@",mutArray);
+
+/**
+ 设置BarView的高度
+
+ @param mutArray 高度数组
+ @param isReset 是否是重置状态
+ */
+- (void)setupBarArrayHeight:(NSMutableArray *)mutArray isReset:(BOOL)isReset {
     CGFloat width = CGRectGetWidth(self.view.bounds);
     CGFloat barMargin = 1;
     CGFloat barWidth = floorf((width - barMargin * (self.barCount + 1)) / self.barCount);
     CGFloat barOrginX = roundf((width - (barMargin + barWidth) * self.barCount + barMargin) / 2.0);
     
     [self.barArray enumerateObjectsUsingBlock:^(MBBarView * _Nonnull bar, NSUInteger idx, BOOL * _Nonnull stop) {
-        //        CGFloat barHeight = 20 + arc4random_uniform(barAreaHeight - 20);
         CGFloat barHeight = [mutArray[idx] floatValue];
-        
-        if (self.orderState) {
-            barHeight = self.barAreaHeight/2 + idx * 2;
+        //重置状态
+        if (isReset) {
+            if (self.orderState) {
+                barHeight = self.barAreaHeight/2 + idx * 2;
+            }
+            //大量重复元素
+            if (self.repeatState) {
+                barHeight = self.barAreaHeight/2 + arc4random_uniform(5) * 10;
+            }
         }
-        //大量重复元素
-        if (self.repeatState) {
-            barHeight = self.barAreaHeight/2 + arc4random_uniform(5) * 10;
-        }
+       
         bar.frame = CGRectMake(barOrginX + idx * (barMargin + barWidth), self.barBottom - barHeight, barWidth, barHeight);
         bar.tag = (int)idx + 2;
     }];
+    
     //近乎有序
-    if (self.orderState) {
+    if (self.orderState && isReset) {
         for (int i = 0; i < 10; i++) {
             int posx = arc4random() % self.barCount;
             MBBarView *bar = (MBBarView *)self.barArray[posx];
@@ -102,8 +107,6 @@
             bar.frame = frame;
         }
     }
-//    [self printBarArray];
-
 }
 
 - (void)onReset {
@@ -123,40 +126,9 @@
         [mutArray addObject:[NSString stringWithFormat:@"%f",barHeight]];
     }
   
-    
-    [self setupBarArrayHeight:mutArray];
+    [self setupBarArrayHeight:mutArray isReset:YES];
+    [self printBarArray];
 
-//    CGFloat width = CGRectGetWidth(self.view.bounds);
-//    CGFloat barMargin = 1;
-//    CGFloat barWidth = floorf((width - barMargin * (self.barCount + 1)) / self.barCount);
-//    CGFloat barOrginX = roundf((width - (barMargin + barWidth) * self.barCount + barMargin) / 2.0);
-//    [self.barArray enumerateObjectsUsingBlock:^(MBBarView * _Nonnull bar, NSUInteger idx, BOOL * _Nonnull stop) {
-////        CGFloat barHeight = 20 + arc4random_uniform(barAreaHeight - 20);
-//        CGFloat barHeight = [mutArray[idx] floatValue];
-//
-//        if (self.orderState) {
-//            barHeight = barAreaHeight/2 + idx * 2;
-//        }
-//        //大量重复元素
-//        if (self.repeatState) {
-//            barHeight = barAreaHeight/2 + arc4random_uniform(5) * 10;
-//        }
-//        bar.frame = CGRectMake(barOrginX + idx * (barMargin + barWidth), barBottom - barHeight, barWidth, barHeight);
-//        bar.tag = (int)idx + 2;
-//    }];
-//    //近乎有序
-//    if (self.orderState) {
-//        for (int i = 0; i < 10; i++) {
-//            int posx = arc4random() % self.barCount;
-//            MBBarView *bar = (MBBarView *)self.barArray[posx];
-//            CGRect frame = bar.frame;
-//            CGFloat h = arc4random() % 100;
-//            frame.size.height += h ;
-//            frame.origin.y -= h;
-//            bar.frame = frame;
-//       }
-//    }
-//    [self printBarArray];
 }
 
 - (void)onSort {
@@ -175,6 +147,15 @@
             return [weakSelf compareWithBarOne:obj1 andBarTwo:obj2];
         } sortType:self.segmentControl.selectedSegmentIndex];
 
+        //归并排序 用了递归 动画有概率跟不上排序 排序
+        if (self.segmentControl.selectedSegmentIndex == MBMergeSort && ![self judgeArrayIsSorted:self.barArray]) {
+            NSLog(@"归并排序动画有问题");
+            [self.barArray mb_sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+                return [weakSelf compareWithBarOne:obj1 andBarTwo:obj2];
+            } sortType:self.segmentControl.selectedSegmentIndex];
+            return ;
+        }
+        
         [self invalidateTimer];
         [self printBarArray];
     });
@@ -184,7 +165,6 @@
 
 
 #pragma mark - 比较
-
 - (NSComparisonResult)compareWithBarOne:(MBBarView *)barOne andBarTwo:(MBBarView *)barTwo {
     // 模拟进行比较所需的耗时
     dispatch_semaphore_wait(self.sema, DISPATCH_TIME_FOREVER);
@@ -196,27 +176,30 @@
     return height1 < height2 ? NSOrderedAscending : NSOrderedDescending;
 }
 
+/**
+ 数组是否排序
+
+ @param mutArray <#mutArray description#>
+ @return <#return value description#>
+ */
+- (BOOL)judgeArrayIsSorted:(NSMutableArray *)mutArray{
+    NSInteger number = mutArray.count - 1;
+    for (NSInteger i = 0; i < number; i++) {
+        if ([self compareWithBarOne:mutArray[i] andBarTwo:mutArray[i + 1]] == NSOrderedDescending) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+#pragma mark - 回调
 - (void)resetSortArray:(NSMutableArray *)mutArray{
     dispatch_async(dispatch_get_main_queue(), ^{
-        [self setupBarArrayHeight:mutArray];
+        [self setupBarArrayHeight:mutArray isReset:NO];
     });
 
 }
-
-
-- (void)coverPositionWithBarOne:(MBBarView *)barOne andBarTwo:(MBBarView *)barTwo {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        CGRect frameOne = barOne.frame;
-        CGRect frameTwo = barTwo.frame;
-        frameOne.origin.y = barTwo.frame.origin.y;
-        frameTwo.origin.y = barOne.frame.origin.y;
-        frameOne.size.height = barTwo.frame.size.height;
-        frameTwo.size.height = barOne.frame.size.height;
-        barOne.frame = frameOne;
-        barTwo.frame = frameTwo;
-    });
-}
-
 - (void)exchangePositionWithBarOne:(MBBarView *)barOne andBarTwo:(MBBarView *)barTwo {
     dispatch_async(dispatch_get_main_queue(), ^{
         CGRect frameOne = barOne.frame;
@@ -228,7 +211,7 @@
         
     });
 }
-
+#pragma mark - 定时器
 - (void)fireTimerAction {
     // 发出信号量，唤醒排序线程
     dispatch_semaphore_signal(self.sema);
@@ -240,7 +223,7 @@
     }
     self.sema = nil;
 }
-
+#pragma mark - 打印
 - (void)printBarArray {
     NSMutableString *str = [NSMutableString string];
     [self.barArray enumerateObjectsUsingBlock:^(MBBarView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -250,24 +233,7 @@
 }
 
 
-/**
- 初始化barArray
- */
-- (void)setupBarArray{
-    [self.barArray removeAllObjects];
-    for (MBBarView *bar in self.view.subviews) {
-        if (bar.tag > 1) {
-            [bar removeFromSuperview];
-        }
-    }
-    _barArray = [NSMutableArray arrayWithCapacity:self.barCount];
-    for (NSInteger index = 0; index < self.barCount; index ++) {
-        MBBarView *bar = [[MBBarView alloc] init];
-        bar.backgroundColor = [UIColor blueColor];
-        [self.view addSubview:bar];
-        [_barArray addObject:bar];
-    }
-}
+
 
 #pragma mark - Getter && Setter
 - (UISegmentedControl *)segmentControl {
@@ -299,7 +265,24 @@
     return _orderSegmentControl;
 }
 
-
+/**
+ 初始化barArray
+ */
+- (void)setupBarArray{
+    [self.barArray removeAllObjects];
+    for (MBBarView *bar in self.view.subviews) {
+        if (bar.tag > 1) {
+            [bar removeFromSuperview];
+        }
+    }
+    _barArray = [NSMutableArray arrayWithCapacity:self.barCount];
+    for (NSInteger index = 0; index < self.barCount; index ++) {
+        MBBarView *bar = [[MBBarView alloc] init];
+        bar.backgroundColor = [UIColor colorWithRed:94.0/255.0 green:171.0/255.0 blue:210.0/255.0 alpha:1];
+        [self.view addSubview:bar];
+        [_barArray addObject:bar];
+    }
+}
 
 
 

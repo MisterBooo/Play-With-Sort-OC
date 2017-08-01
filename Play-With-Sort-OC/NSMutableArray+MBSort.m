@@ -133,41 +133,26 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
     for ( int k = l; k <= r; k++) {
         if (i > mid) { // 如果左半部分元素已经全部处理完毕
             self.comparator(nil, nil);
-//            objc_msgSendExchangePosition(self.vc,func,self[k],aux[j - l]);
             self[k] = aux[j - l];
-//            [self coverPositionWithBarOne:self[k] andBarTwo:aux[j - l]];
             j++;
         }else if(j > r){// 如果右半部分元素已经全部处理完毕
             self.comparator(nil, nil);
-//            objc_msgSendExchangePosition(self.vc,func,self[k],aux[i - l]);
             self[k] = aux[i - l];
-//            [self coverPositionWithBarOne:self[k] andBarTwo:aux[i - l]];
-
             i++;
         }else if(self.comparator(aux[i - l], aux[j - l]) == NSOrderedAscending){// 左半部分所指元素 < 右半部分所指元素
-//            objc_msgSendExchangePosition(self.vc,func,self[k],aux[i - l]);
             self[k] = aux[i - l];
-//            [self coverPositionWithBarOne:self[k] andBarTwo:aux[i - l]];
-
             i++;
         }else{
             self.comparator(nil, nil);
-//            objc_msgSendExchangePosition(self.vc,func,self[k],aux[j - l]);
             self[k] = aux[j - l];
-//            [self coverPositionWithBarOne:self[k] andBarTwo:aux[j - l]];
-
             j++;
         }
-//        self.comparator(nil, nil);
         NSMutableArray *mutArray = [NSMutableArray array];
         [self enumerateObjectsUsingBlock:^(MBBarView *  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             [mutArray addObject:[NSString stringWithFormat:@"%f",obj.frame.size.height]];
         }];
         
         objc_msgSendSortArray(self.vc,func,mutArray);
-        
-        //打印排序时的数组
-//        [self printArray];
     }
 
 }
@@ -185,6 +170,7 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
     int p = [self __partition:array indexL:l indexR:r];
     [self mb_quickSort:array indexL:l indexR:p-1];
     [self mb_quickSort:array indexL:p + 1 indexR:r];
+    
 }
 /**
  对arr[l...r]部分进行partition操作
@@ -198,17 +184,14 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
 - (int)__partition:(NSMutableArray *)array indexL:(int)l indexR:(int)r{
     int j = l;// arr[l+1...j] < v ; arr[j+1...i) > v
     for (int i = l + 1; i <= r ; i++) {
-   
         if ( self.comparator(array[i], array[ l]) == NSOrderedAscending) {
             j++;
             //交换
-            [array exchangeObjectAtIndex:j withObjectAtIndex:i];
+            [self mb_exchangeWithIndexA:j indexB:i];
         }
     }
-    SEL func = NSSelectorFromString(@"exchangePositionWithBarOne:andBarTwo:");
-    objc_msgSendExchangePosition(self.objc,func,array[j],array[l]);
-    [array exchangeObjectAtIndex:j withObjectAtIndex:l];
-    [self printArray];
+    self.comparator(nil, nil);
+    [self mb_exchangeWithIndexA:j indexB:l];
     return j;
 }
 
@@ -221,13 +204,13 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
     }];
     NSLog(@"数组：%@", str);
 }
-- (void)coverPositionWithBarOne:(MBBarView *)barOne andBarTwo:(MBBarView *)barTwo {
-    CGRect frameOne = barOne.frame;
-    CGRect frameTwo = barTwo.frame;
-    frameOne.origin.x = barTwo.frame.origin.x;
-    frameTwo.origin.x = barOne.frame.origin.x;
-    barOne.frame = frameOne;
-    barTwo.frame = frameTwo;
+/// 交换两个元素
+- (void)mb_exchangeWithIndexA:(NSInteger)indexA indexB:(NSInteger)indexB{
+    id temp = self[indexA];
+    self[indexA] = self[indexB];
+    self[indexB] = temp;
+    SEL func = NSSelectorFromString(@"exchangePositionWithBarOne:andBarTwo:");
+    objc_msgSendExchangePosition(self.objc,func,temp,self[indexA]);
 }
 
 #pragma mark - Getter && Setter 给NSMutableArray 类动态添加属性 comparator
