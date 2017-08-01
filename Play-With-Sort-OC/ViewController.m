@@ -127,7 +127,6 @@
     }
   
     [self setupBarArrayHeight:mutArray isReset:YES];
-    [self printBarArray];
 
 }
 
@@ -157,7 +156,6 @@
         }
         
         [self invalidateTimer];
-        [self printBarArray];
     });
 }
 
@@ -223,16 +221,6 @@
     }
     self.sema = nil;
 }
-#pragma mark - 打印
-- (void)printBarArray {
-    NSMutableString *str = [NSMutableString string];
-    [self.barArray enumerateObjectsUsingBlock:^(MBBarView * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        [str appendFormat:@"%@ ", @(CGRectGetHeight(obj.frame))];
-    }];
-    NSLog(@"VC数组：%@", str);
-}
-
-
 
 
 #pragma mark - Getter && Setter
