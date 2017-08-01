@@ -43,6 +43,9 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
         case MBQuickSort:
             [self mb_quickSortComparator:comparator];
             break;
+        case MBIdenticalQuickSort:
+            [self mb_identicalQuickSortComparator:comparator];
+            break;
         default:
             break;
     }
@@ -159,10 +162,10 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
 #pragma mark - /**快速排序*/
 - (void)mb_quickSortComparator:(MBSortComparator )comparator{
     self.comparator = comparator;
-    //要特别注意边界的情况
     Class class = NSClassFromString(@"ViewController");
     id objc = [class new];
     self.objc = objc;
+    //要特别注意边界的情况
     [self mb_quickSort:self indexL:0 indexR:(int)self.count - 1];
 }
 - (void)mb_quickSort:(NSMutableArray *)array indexL:(int)l indexR:(int)r{
@@ -170,7 +173,6 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
     int p = [self __partition:array indexL:l indexR:r];
     [self mb_quickSort:array indexL:l indexR:p-1];
     [self mb_quickSort:array indexL:p + 1 indexR:r];
-    
 }
 /**
  对arr[l...r]部分进行partition操作
@@ -194,7 +196,50 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
     [self mb_exchangeWithIndexA:j indexB:l];
     return j;
 }
+#pragma mark - /**双路快排*/
+- (void)mb_identicalQuickSortComparator:(MBSortComparator )comparator{
+    self.comparator = comparator;
+    Class class = NSClassFromString(@"ViewController");
+    id objc = [class new];
+    self.objc = objc;
+    //要特别注意边界的情况
+    [self mb_quickSort:self indexL:0 indexR:(int)self.count - 1];
+}
+- (void)mb_identicalQuickSort:(NSMutableArray *)array indexL:(int)l indexR:(int)r{
+    if (l >= r) return;
+    int p = [self __partition2:array indexL:l indexR:r];
+    [self mb_quickSort:array indexL:l indexR:p-1];
+    [self mb_quickSort:array indexL:p + 1 indexR:r];
+}
+- (int)__partition2:(NSMutableArray *)array indexL:(int)l indexR:(int)r{
+    // 随机在arr[l...r]的范围中, 选择一个数值作为标定点pivot
+    [self mb_exchangeWithIndexA:l indexB:(arc4random()%(r-l+1))];
+    id v = array[l];
+    // arr[l+1...i) <= v; arr(j...r] >= v
+    int i = l + 1, j = r;
+    while (true) {
+        
+        while (i <= r && self.comparator(array[i],v) == NSOrderedAscending)
+            i++;
+        
+        while (j > l + 1 && self.comparator(array[j],v) == NSOrderedDescending)
+            j--;
+        
+        if (i > j) {
+            break;
+        }
+        [self mb_exchangeWithIndexA:i indexB:j];
 
+//        [array exchangeObjectAtIndex:i withObjectAtIndex:j];
+        
+        i++;
+        j--;
+    }
+    [self mb_exchangeWithIndexA:l indexB:j];
+
+//    [array exchangeObjectAtIndex:l withObjectAtIndex:j];
+    return j;
+}
 #pragma mark - Private
 - (void)printArray{
     //打印排序时的数组
