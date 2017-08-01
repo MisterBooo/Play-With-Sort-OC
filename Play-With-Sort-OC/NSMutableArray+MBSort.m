@@ -227,20 +227,23 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
 
     if (l >= r)  return;
     
-    // 随机在arr[l...r]的范围中, 选择一个数值作为标定点pivot
     self.comparator(nil, nil);
+    // 随机在arr[l...r]的范围中, 选择一个数值作为标定点pivot
     [self mb_exchangeWithIndexA:l indexB:(arc4random_uniform(r-l+1) + l)];
     
     id v = array[l];
     
     int lt = l; // array[l+1...lt] < v
-    int gt = r + l; // array[gt...r] > v
+    int gt = r + 1; // array[gt...r] > v
+    NSLog(@"r:%d,gt:%d",r,gt);
     int i = l + 1; // array[lt+1...i) == v
-   
+    
+    
     while (i < gt) {
         if ( [self compareWithBarOne:array[i] andBarTwo:v] == NSOrderedAscending) {
             self.comparator(nil, nil);
             [self mb_exchangeWithIndexA:i indexB:lt + 1];
+
             i++;
             lt++;
         }else if  ([self compareWithBarOne:array[i] andBarTwo:v] == NSOrderedDescending){
@@ -248,8 +251,9 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
             [self mb_exchangeWithIndexA:i indexB:gt - 1];
             gt--;
         }else{ //array[i] == v
-            i ++;
+            i++;
         }
+
     }
     self.comparator(nil,nil);
     [self mb_exchangeWithIndexA:l indexB:lt];
@@ -269,7 +273,6 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
     NSLog(@"数组：%@", str);
 }
 - (NSComparisonResult)compareWithBarOne:(MBBarView *)barOne andBarTwo:(MBBarView *)barTwo {
-    // 模拟进行比较所需的耗时
     CGFloat height1 = CGRectGetHeight(barOne.frame);
     CGFloat height2 = CGRectGetHeight(barTwo.frame);
     if (height1 == height2) {
