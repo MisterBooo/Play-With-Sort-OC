@@ -52,7 +52,7 @@
     [self onReset];
 }
 - (void)countSegmentControlChanged:(UISegmentedControl *)segmentControl{
-    NSArray *count = @[@"5", @"10", @"50",@"100",@"150"];
+    NSArray *count = @[@"5", @"10",@"20", @"50",@"100"];
     self.barCount = [count[segmentControl.selectedSegmentIndex] integerValue];
     [self onReset];
 }
@@ -70,7 +70,7 @@
 }
 
 - (void)setupBarArrayHeight:(NSMutableArray *)mutArray{
-    NSLog(@"mutArray:%@",mutArray);
+//    NSLog(@"mutArray:%@",mutArray);
     CGFloat width = CGRectGetWidth(self.view.bounds);
     CGFloat barMargin = 1;
     CGFloat barWidth = floorf((width - barMargin * (self.barCount + 1)) / self.barCount);
@@ -282,8 +282,8 @@
 
 - (UISegmentedControl *)countSegmentControl {
     if (!_countSegmentControl) {
-        _countSegmentControl = [[UISegmentedControl alloc] initWithItems:@[@"5", @"10", @"50",@"100",@"150"]];
-        _countSegmentControl.selectedSegmentIndex = 3;
+        _countSegmentControl = [[UISegmentedControl alloc] initWithItems:@[@"5", @"10",@"20", @"50",@"100"]];
+        _countSegmentControl.selectedSegmentIndex = 4;
         [_countSegmentControl addTarget:self action:@selector(countSegmentControlChanged:) forControlEvents:UIControlEventValueChanged];
         [self.view addSubview:_countSegmentControl];
     }

@@ -151,7 +151,7 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
 
             i++;
         }else{
-//            self.comparator(nil, nil);
+            self.comparator(nil, nil);
 //            objc_msgSendExchangePosition(self.vc,func,self[k],aux[j - l]);
             self[k] = aux[j - l];
 //            [self coverPositionWithBarOne:self[k] andBarTwo:aux[j - l]];
