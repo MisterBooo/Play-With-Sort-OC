@@ -7,6 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "ViewController.h"
+
 
 typedef NS_ENUM(NSUInteger,MBSortType){
     MBSelectionSort,         //选择排序
@@ -22,6 +24,9 @@ typedef NSComparisonResult(^MBSortComparator)(id obj1, id obj2);
 
 
 @interface NSMutableArray (MBSort)
+
+@property(nonatomic, strong) UIViewController *vc;
+
 
 - (void)mb_sortUsingComparator:(MBSortComparator )comparator sortType:(MBSortType )sortType;
 

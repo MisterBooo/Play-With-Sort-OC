@@ -15,6 +15,7 @@
 		AA30B1641F2499E70072C0FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA30B1621F2499E70072C0FF /* LaunchScreen.storyboard */; };
 		AA30B16F1F2499E80072C0FF /* Play_With_Sort_OCTests.m in Sources */ = {isa = PBXBuildFile; fileRef = AA30B16E1F2499E80072C0FF /* Play_With_Sort_OCTests.m */; };
 		AA52ED251F28896100080385 /* NSMutableArray+MBSort.m in Sources */ = {isa = PBXBuildFile; fileRef = AA52ED241F28896100080385 /* NSMutableArray+MBSort.m */; };
+		AA52ED331F2F4A8F00080385 /* MBBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = AA52ED321F2F4A8E00080385 /* MBBarView.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,6 +44,8 @@
 		AA30B1701F2499E80072C0FF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA52ED231F28896100080385 /* NSMutableArray+MBSort.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSMutableArray+MBSort.h"; sourceTree = "<group>"; };
 		AA52ED241F28896100080385 /* NSMutableArray+MBSort.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableArray+MBSort.m"; sourceTree = "<group>"; };
+		AA52ED311F2F4A8E00080385 /* MBBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBBarView.h; sourceTree = "<group>"; };
+		AA52ED321F2F4A8E00080385 /* MBBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBBarView.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -87,6 +90,8 @@
 				AA30B1541F2499E70072C0FF /* Supporting Files */,
 				AA52ED231F28896100080385 /* NSMutableArray+MBSort.h */,
 				AA52ED241F28896100080385 /* NSMutableArray+MBSort.m */,
+				AA52ED311F2F4A8E00080385 /* MBBarView.h */,
+				AA52ED321F2F4A8E00080385 /* MBBarView.m */,
 			);
 			path = "Play-With-Sort-OC";
 			sourceTree = "<group>";
@@ -221,6 +226,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA52ED331F2F4A8F00080385 /* MBBarView.m in Sources */,
 				AA30B15C1F2499E70072C0FF /* ViewController.m in Sources */,
 				AA30B1591F2499E70072C0FF /* AppDelegate.m in Sources */,
 				AA52ED251F28896100080385 /* NSMutableArray+MBSort.m in Sources */,
