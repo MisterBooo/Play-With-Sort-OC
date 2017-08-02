@@ -10,6 +10,7 @@
 #import <objc/message.h>
 #import <UIKit/UIKit.h>
 #import "MBBarView.h"
+#import "MBHeap.h"
 void (*objc_msgSendExchangePosition)(id self,SEL _cmd,id obj1,id obj2) = (void *)objc_msgSend;
 
 void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgSend;
@@ -268,6 +269,15 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
 #pragma mark - /**堆排序*/
 ///借助heapify过程创建堆
 - (void)mb_heapSort{
+    MBHeap *maxheap = [[MBHeap alloc] init];
+    //构造一个最大堆
+    [maxheap maxHeapItems:self.copy];
+    for (int i = maxheap.size - 1; i >= 0; i--) {
+       //这个动画如何显示
+        self[i] = maxheap.extractMax;
+    }
+    
+    [self printArray];
     
 }
 

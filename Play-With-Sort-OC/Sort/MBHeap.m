@@ -7,6 +7,11 @@
 //
 
 #import "MBHeap.h"
+#import <objc/message.h>
+#import "NSMutableArray+MBSort.h"
+#import "MBBarView.h"
+NSComparisonResult (*objc_msgSendCompareObjc1AndObjc2)(id self,SEL _cmd,id obj1,id obj2) = (void *)objc_msgSend;
+
 
 @interface MBHeap()
 @property(nonatomic, strong) NSMutableArray *data;
@@ -25,10 +30,11 @@
     _capacity = capacity;
 }
 - (void)maxHeapItems:(NSArray *)items{
-    _capacity = items.count + 1;
-    _data = [NSMutableArray arrayWithCapacity:_capacity];
+    _capacity = items.count ;
+    _data = [NSMutableArray arrayWithCapacity:items.count + 1];
+    [_data addObject:[NSNull null]];
     for (int i = 0; i < items.count; i++) {
-        _data[i+1] = items[i];
+        [_data addObject:items[i]];
     }
     _count = (int)items.count;
     for (int i = _count / 2; i >= 1; i--) {
@@ -88,11 +94,30 @@
 
 #pragma mark - Private
 - (void)shiftUp:(int )k{
-    
+    while (k > 1 && [self heapCompareWithBarOne:_data[k/2] andBarTwo:_data[k]] == NSOrderedAscending) {
+        [_data mb_exchangeWithIndexA:k/2 indexB:k];
+        k /= 2;
+    }
 }
 - (void)shiftDown:(int )k{
+    while (2 * k <= _count) {
+        int j = 2 * k;
+        if (j + 1 <= _count && [self heapCompareWithBarOne:_data[j + 1] andBarTwo:_data[j]] == NSOrderedDescending) j++;//左孩子小于右孩子
+        if ([self heapCompareWithBarOne:_data[k] andBarTwo:_data[j]] == NSOrderedDescending) break;//父节点大于子节点
+        [_data exchangeObjectAtIndex:k withObjectAtIndex:j];
+        k = j;
+    }
     
 }
 
+- (NSComparisonResult)heapCompareWithBarOne:(MBBarView *)barOne andBarTwo:(MBBarView *)barTwo {
+    // 模拟进行比较所需的耗时
+    CGFloat height1 = CGRectGetHeight(barOne.frame);
+    CGFloat height2 = CGRectGetHeight(barTwo.frame);
+    if (height1 == height2) {
+        return NSOrderedSame;
+    }
+    return height1 < height2 ? NSOrderedAscending : NSOrderedDescending;
+}
 
 @end

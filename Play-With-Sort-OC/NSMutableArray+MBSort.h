@@ -29,5 +29,6 @@ typedef NSComparisonResult(^MBSortComparator)(id obj1, id obj2);
 
 
 - (void)mb_sortUsingComparator:(MBSortComparator )comparator sortType:(MBSortType )sortType;
+- (void)mb_exchangeWithIndexA:(NSInteger)indexA indexB:(NSInteger)indexB;
 
 @end
