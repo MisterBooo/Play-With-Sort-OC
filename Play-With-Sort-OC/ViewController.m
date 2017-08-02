@@ -29,6 +29,7 @@
 @property (nonatomic, strong) UILabel *timeLabel;
 @property (nonatomic, assign) NSTimeInterval nowTime;
 
+
 @end
 
 @implementation ViewController
@@ -151,24 +152,18 @@
         [self.barArray mb_sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
             return [weakSelf compareWithBarOne:obj1 andBarTwo:obj2];
         } sortType:self.segmentControl.selectedSegmentIndex];
-
-//        //归并排序 用了递归 动画有概率跟不上排序 排序
-//        if (self.segmentControl.selectedSegmentIndex == MBMergeSort && ![self judgeArrayIsSorted:self.barArray]) {
-//            NSLog(@"归并排序动画有问题");
-//            [self.barArray mb_sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-//                return [weakSelf compareWithBarOne:obj1 andBarTwo:obj2];
-//            } sortType:self.segmentControl.selectedSegmentIndex];
-//            return ;
-//        }
-        
-        NSTimeInterval interval = [[NSDate date] timeIntervalSince1970] - self.nowTime;
-        if ([self judgeArrayIsSorted:self.barArray]) {
-            self.timeLabel.text = [NSString stringWithFormat:@"排序成功：耗时(秒):%2.3f", interval];
-        }else{
-            self.timeLabel.text = [NSString stringWithFormat:@"排序失败：耗时(秒):%2.3f", interval];
-        }
         
         [self invalidateTimer];
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSTimeInterval interval = [[NSDate date] timeIntervalSince1970] - self.nowTime;
+            if ([self judgeArrayIsSorted:self.barArray]) {
+                self.timeLabel.text = [NSString stringWithFormat:@"排序成功：耗时:%2.3f (秒)", interval];
+            }else{
+                self.timeLabel.text = [NSString stringWithFormat:@"排序失败：耗时:%2.3f (秒)", interval];
+            }
+        });
+       
     });
 }
 
@@ -229,9 +224,15 @@
 - (void)fireTimerAction {
     // 发出信号量，唤醒排序线程
     dispatch_semaphore_signal(self.sema);
-    // 更新计时
-    NSTimeInterval interval = [[NSDate date] timeIntervalSince1970] - self.nowTime;
-    self.timeLabel.text = [NSString stringWithFormat:@"耗时(秒):%2.3f", interval];
+    if (self.segmentControl.selectedSegmentIndex == MBMergeSort) {
+        //使用归并排序时  更新界面 会造成排序失败 原因未知
+    }else{
+        // 更新计时
+        NSTimeInterval interval = [[NSDate date] timeIntervalSince1970] - self.nowTime;
+        self.timeLabel.text = [NSString stringWithFormat:@"耗时:%2.3f (秒)", interval];
+    }
+  
+
 }
 - (void)invalidateTimer {
     if (self.timer) {
