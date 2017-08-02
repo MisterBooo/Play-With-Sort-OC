@@ -25,6 +25,10 @@
 @property(nonatomic, assign) NSInteger index;
 @property(nonatomic, assign) CGFloat barBottom;
 @property(nonatomic, assign) CGFloat barAreaHeight;
+
+@property (nonatomic, strong) UILabel *timeLabel;
+@property (nonatomic, assign) NSTimeInterval nowTime;
+
 @end
 
 @implementation ViewController
@@ -131,10 +135,12 @@
 }
 
 - (void)onSort {
-    if (self.timer) {
+    if (self.timer || [self judgeArrayIsSorted:self.barArray]) {
         return;
     }
     self.sema = dispatch_semaphore_create(0);
+    self.nowTime = [[NSDate date] timeIntervalSince1970];
+    
     
     // 定时器信号
     self.timer = [NSTimer scheduledTimerWithTimeInterval:0.001 target:self selector:@selector(fireTimerAction) userInfo:nil repeats:YES];
@@ -146,13 +152,20 @@
             return [weakSelf compareWithBarOne:obj1 andBarTwo:obj2];
         } sortType:self.segmentControl.selectedSegmentIndex];
 
-        //归并排序 用了递归 动画有概率跟不上排序 排序
-        if (self.segmentControl.selectedSegmentIndex == MBMergeSort && ![self judgeArrayIsSorted:self.barArray]) {
-            NSLog(@"归并排序动画有问题");
-            [self.barArray mb_sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
-                return [weakSelf compareWithBarOne:obj1 andBarTwo:obj2];
-            } sortType:self.segmentControl.selectedSegmentIndex];
-            return ;
+//        //归并排序 用了递归 动画有概率跟不上排序 排序
+//        if (self.segmentControl.selectedSegmentIndex == MBMergeSort && ![self judgeArrayIsSorted:self.barArray]) {
+//            NSLog(@"归并排序动画有问题");
+//            [self.barArray mb_sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+//                return [weakSelf compareWithBarOne:obj1 andBarTwo:obj2];
+//            } sortType:self.segmentControl.selectedSegmentIndex];
+//            return ;
+//        }
+        
+        NSTimeInterval interval = [[NSDate date] timeIntervalSince1970] - self.nowTime;
+        if ([self judgeArrayIsSorted:self.barArray]) {
+            self.timeLabel.text = [NSString stringWithFormat:@"排序成功：耗时(秒):%2.3f", interval];
+        }else{
+            self.timeLabel.text = [NSString stringWithFormat:@"排序失败：耗时(秒):%2.3f", interval];
         }
         
         [self invalidateTimer];
@@ -165,7 +178,9 @@
 #pragma mark - 比较
 - (NSComparisonResult)compareWithBarOne:(MBBarView *)barOne andBarTwo:(MBBarView *)barTwo {
     // 模拟进行比较所需的耗时
-    dispatch_semaphore_wait(self.sema, DISPATCH_TIME_FOREVER);
+    if (self.sema) {
+        dispatch_semaphore_wait(self.sema, DISPATCH_TIME_FOREVER);
+    }
     CGFloat height1 = CGRectGetHeight(barOne.frame);
     CGFloat height2 = CGRectGetHeight(barTwo.frame);
     if (height1 == height2) {
@@ -214,6 +229,9 @@
 - (void)fireTimerAction {
     // 发出信号量，唤醒排序线程
     dispatch_semaphore_signal(self.sema);
+    // 更新计时
+    NSTimeInterval interval = [[NSDate date] timeIntervalSince1970] - self.nowTime;
+    self.timeLabel.text = [NSString stringWithFormat:@"耗时(秒):%2.3f", interval];
 }
 - (void)invalidateTimer {
     if (self.timer) {
@@ -254,6 +272,18 @@
     return _orderSegmentControl;
 }
 
+- (UILabel *)timeLabel {
+    if (!_timeLabel) {
+        _timeLabel = [[UILabel alloc] init];
+        _timeLabel.font = [UIFont systemFontOfSize:14];
+        _timeLabel.textColor = [UIColor darkTextColor];
+        _timeLabel.textAlignment = NSTextAlignmentCenter;
+        self.timeLabel.frame = CGRectMake(CGRectGetWidth(self.view.bounds) * 0.5 - 50,
+                                          CGRectGetHeight(self.view.bounds) * 0.95, self.view.bounds.size.width, 40);
+        [self.view addSubview:_timeLabel];
+    }
+    return _timeLabel;
+}
 /**
  初始化barArray
  */

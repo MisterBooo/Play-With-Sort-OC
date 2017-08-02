@@ -12,9 +12,7 @@
 #import "MBBarView.h"
 #import "MBHeap.h"
 void (*objc_msgSendExchangePosition)(id self,SEL _cmd,id obj1,id obj2) = (void *)objc_msgSend;
-
 void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgSend;
-
 
 @interface NSMutableArray()
 
@@ -35,27 +33,35 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
     
     switch (sortType) {
         case MBSelectionSort:
+            //选择排序
             [self mb_selectionSort];
             break;
         case MBBubbleSort:
+            //冒泡排序
             [self mb_bubbleSort];
             break;
         case MBInsertionSort:
+            //插入排序
             [self mb_insertionSort];
             break;
         case MBMergeSort:
+            //归并排序
             [self mb_mergeSort];
             break;
         case MBQuickSort:
+            //快速排序
             [self mb_quickSort];
             break;
         case MBIdenticalQuickSort:
+            //双路快速排序
             [self mb_identicalQuickSort];
             break;
         case MBQuick3WaysSort:
+            //三路快速排序
             [self mb_quick3WaysSort];
             break;
         case MBHeapSort:
+            //堆排序
             [self mb_heapSort];
             break;
         default:
@@ -270,18 +276,14 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
 ///借助heapify过程创建堆
 - (void)mb_heapSort{
     MBHeap *maxheap = [[MBHeap alloc] init];
-    //构造一个最大堆
-    [maxheap maxHeapItems:self.copy];
+    maxheap.comparator = self.comparator;
+    //构造一个最大堆 在构造最大堆的过程中动画显示
+    [maxheap maxHeapItems:self];
     for (int i = maxheap.size - 1; i >= 0; i--) {
-       //这个动画如何显示
+       //这个动画如何显示 在构造最大堆的过程中动画显示
         self[i] = maxheap.extractMax;
     }
-    
-    [self printArray];
-    
 }
-
-
 
 #pragma mark - Private
 - (void)printArray{
@@ -310,6 +312,11 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
     id temp = self[indexA];
     self[indexA] = self[indexB];
     self[indexB] = temp;
+    if (!self.objc) {
+        Class class = NSClassFromString(@"ViewController");
+        id objc = [class new];
+        self.objc = objc;
+    }
     SEL func = NSSelectorFromString(@"exchangePositionWithBarOne:andBarTwo:");
     objc_msgSendExchangePosition(self.objc,func,temp,self[indexA]);
 }

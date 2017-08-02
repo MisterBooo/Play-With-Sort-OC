@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "NSMutableArray+MBSort.h"
 
 @interface MBHeap : NSObject
 
@@ -60,5 +61,7 @@
  @return <#return value description#>
  */
 - (id)getMax;
+
+@property(nonatomic, copy) MBSortComparator comparator;
 
 @end

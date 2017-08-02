@@ -8,7 +8,6 @@
 
 #import "MBHeap.h"
 #import <objc/message.h>
-#import "NSMutableArray+MBSort.h"
 #import "MBBarView.h"
 NSComparisonResult (*objc_msgSendCompareObjc1AndObjc2)(id self,SEL _cmd,id obj1,id obj2) = (void *)objc_msgSend;
 
@@ -78,7 +77,7 @@ NSComparisonResult (*objc_msgSendCompareObjc1AndObjc2)(id self,SEL _cmd,id obj1,
  */
 - (id)extractMax{
     id ret = _data[1];
-    [_data exchangeObjectAtIndex:1 withObjectAtIndex:_count];
+    [_data mb_exchangeWithIndexA:1 indexB:_count];
     _count--;
     [self shiftDown:1];
     return ret;
@@ -104,14 +103,14 @@ NSComparisonResult (*objc_msgSendCompareObjc1AndObjc2)(id self,SEL _cmd,id obj1,
         int j = 2 * k;
         if (j + 1 <= _count && [self heapCompareWithBarOne:_data[j + 1] andBarTwo:_data[j]] == NSOrderedDescending) j++;//左孩子小于右孩子
         if ([self heapCompareWithBarOne:_data[k] andBarTwo:_data[j]] == NSOrderedDescending) break;//父节点大于子节点
-        [_data exchangeObjectAtIndex:k withObjectAtIndex:j];
+        self.comparator(nil, nil);
+        [_data mb_exchangeWithIndexA:k indexB:j];
         k = j;
     }
     
 }
 
 - (NSComparisonResult)heapCompareWithBarOne:(MBBarView *)barOne andBarTwo:(MBBarView *)barTwo {
-    // 模拟进行比较所需的耗时
     CGFloat height1 = CGRectGetHeight(barOne.frame);
     CGFloat height2 = CGRectGetHeight(barTwo.frame);
     if (height1 == height2) {
