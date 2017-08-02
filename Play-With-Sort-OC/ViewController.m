@@ -278,7 +278,7 @@
         _timeLabel.font = [UIFont systemFontOfSize:14];
         _timeLabel.textColor = [UIColor darkTextColor];
         _timeLabel.textAlignment = NSTextAlignmentCenter;
-        self.timeLabel.frame = CGRectMake(CGRectGetWidth(self.view.bounds) * 0.5 - 50,
+        self.timeLabel.frame = CGRectMake(0,
                                           CGRectGetHeight(self.view.bounds) * 0.95, self.view.bounds.size.width, 40);
         [self.view addSubview:_timeLabel];
     }
