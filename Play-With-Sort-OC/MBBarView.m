@@ -34,5 +34,9 @@
     return _label;
 }
 
+- (void)setFrame:(CGRect)frame {
+    [super setFrame:frame];
+    _copiedFrame = frame;
+}
 
 @end

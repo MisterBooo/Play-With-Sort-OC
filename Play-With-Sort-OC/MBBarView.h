@@ -10,5 +10,6 @@
 
 @interface MBBarView : UIView
 
+@property(nonatomic, assign) CGRect copiedFrame;
 
 @end

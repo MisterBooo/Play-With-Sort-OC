@@ -111,8 +111,8 @@ NSComparisonResult (*objc_msgSendCompareObjc1AndObjc2)(id self,SEL _cmd,id obj1,
 }
 
 - (NSComparisonResult)heapCompareWithBarOne:(MBBarView *)barOne andBarTwo:(MBBarView *)barTwo {
-    CGFloat height1 = CGRectGetHeight(barOne.frame);
-    CGFloat height2 = CGRectGetHeight(barTwo.frame);
+    CGFloat height1 = CGRectGetHeight(barOne.copiedFrame);
+    CGFloat height2 = CGRectGetHeight(barTwo.copiedFrame);
     if (height1 == height2) {
         return NSOrderedSame;
     }

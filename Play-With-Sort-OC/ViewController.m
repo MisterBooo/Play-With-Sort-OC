@@ -139,7 +139,10 @@
     if (self.timer || [self judgeArrayIsSorted:self.barArray]) {
         return;
     }
-    self.sema = dispatch_semaphore_create(0);
+    if (!self.sema) {
+        self.sema = dispatch_semaphore_create(0);
+        dispatch_semaphore_signal(self.sema); // 先触发一次，避免排序先于定时器，会导致 dispatch_semaphore_wait 等待锁死
+    }
     self.nowTime = [[NSDate date] timeIntervalSince1970];
     
     
@@ -147,11 +150,12 @@
     self.timer = [NSTimer scheduledTimerWithTimeInterval:0.001 target:self selector:@selector(fireTimerAction) userInfo:nil repeats:YES];
     self.barArray.vc = self;
 
+    NSInteger selectedSegmentIndex = self.segmentControl.selectedSegmentIndex;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         __unsafe_unretained __block typeof(self) weakSelf = self;
         [self.barArray mb_sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
             return [weakSelf compareWithBarOne:obj1 andBarTwo:obj2];
-        } sortType:self.segmentControl.selectedSegmentIndex];
+        } sortType:selectedSegmentIndex];
         
         [self invalidateTimer];
         
@@ -172,12 +176,15 @@
 
 #pragma mark - 比较
 - (NSComparisonResult)compareWithBarOne:(MBBarView *)barOne andBarTwo:(MBBarView *)barTwo {
+    if (barOne == nil || barTwo == nil) {
+        return barOne == nil ? (barTwo == nil ? NSOrderedSame : NSOrderedAscending) : NSOrderedDescending;
+    }
     // 模拟进行比较所需的耗时
     if (self.sema) {
         dispatch_semaphore_wait(self.sema, DISPATCH_TIME_FOREVER);
     }
-    CGFloat height1 = CGRectGetHeight(barOne.frame);
-    CGFloat height2 = CGRectGetHeight(barTwo.frame);
+    CGFloat height1 = CGRectGetHeight(barOne.copiedFrame);
+    CGFloat height2 = CGRectGetHeight(barTwo.copiedFrame);
     if (height1 == height2) {
         return NSOrderedSame;
     }
@@ -224,13 +231,11 @@
 - (void)fireTimerAction {
     // 发出信号量，唤醒排序线程
     dispatch_semaphore_signal(self.sema);
-    if (self.segmentControl.selectedSegmentIndex == MBMergeSort) {
-        //使用归并排序时  更新界面 会造成排序失败 原因未知
-    }else{
+    dispatch_async(dispatch_get_main_queue(), ^{
         // 更新计时
         NSTimeInterval interval = [[NSDate date] timeIntervalSince1970] - self.nowTime;
         self.timeLabel.text = [NSString stringWithFormat:@"耗时:%2.3f (秒)", interval];
-    }
+    });
   
 
 }

@@ -113,48 +113,79 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
 - (void)mb_mergeSortArray:(NSMutableArray *)array LeftIndex:(int )l rightIndex:(int)r{
     if(l >= r) return;
     int mid = (l + r) / 2;
-    [self mb_mergeSortArray:self LeftIndex:l rightIndex:mid];
-    [self mb_mergeSortArray:self LeftIndex:mid + 1 rightIndex:r];
-    [self mb_mergeSortArray:self LeftIndex:l midIndex:mid rightIndex:r];
+    [self mb_mergeSortArray:self LeftIndex:l rightIndex:mid]; //左边有序
+    [self mb_mergeSortArray:self LeftIndex:mid + 1 rightIndex:r]; //右边有序
+    [self mb_mergeSortArray:self LeftIndex:l midIndex:mid rightIndex:r]; //再将二个有序数列合并
 }
 
 - (void)mb_mergeSortArray:(NSMutableArray *)array LeftIndex:(int )l midIndex:(int )mid rightIndex:(int )r{
 
-    SEL func = NSSelectorFromString(@"resetSortArray:");
+    dispatch_async(dispatch_get_main_queue(), ^{
+        
+        SEL func = NSSelectorFromString(@"resetSortArray:");
+        // 开辟新的空间 r-l+1的空间
+        NSMutableArray *aux = [NSMutableArray arrayWithCapacity:r-l+1];
+        for (int i = l; i <= r; i++) {
+            // aux 中索引 i-l 的对象 与 array 中索引 i 的对象一致
+            // aux[i-l] = array[i];
+            [aux addObject:array[i]];
+        }
+        // 初始化，i指向左半部分的起始索引位置l；j指向右半部分起始索引位置mid+1
+        int i = l, j = mid + 1;
+        for ( int k = l; k <= r; k++) {
+             if (i > mid) { // 如果左半部分元素已经全部处理完毕
+                 self.comparator(nil, nil);
+                 self[k] = aux[j - l];
+                 j++;
+             }else if(j > r){// 如果右半部分元素已经全部处理完毕
+                 self.comparator(nil, nil);
+                 self[k] = aux[i - l];
+                 i++;
+             }else if(self.comparator(aux[i - l], aux[j - l]) == NSOrderedAscending){// 左半部分所指元素 < 右半部分所指元素
+                 array[k] = aux[i - l];
+                 i++;
+             }else{
+                 self.comparator(nil, nil);
+                 array[k] = aux[j - l];
+                 j++;
+             }
+            
+            NSMutableArray *mutArray = [NSMutableArray array];
+            [array enumerateObjectsUsingBlock:^(MBBarView *  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                [mutArray addObject:[NSString stringWithFormat:@"%f",obj.frame.size.height]];
+            }];
+            
+            objc_msgSendSortArray(self.vc,func,mutArray);
+        }
+    });
+
+}
+//将有二个有序数列a[first...mid]和a[mid...last]合并。
+- (void)mb_mergeSortedArray:(NSMutableArray *)array LeftIndex:(int )l midIndex:(int )mid rightIndex:(int )r
+{
     // 开辟新的空间 r-l+1的空间
-    NSMutableArray *aux = [NSMutableArray arrayWithCapacity:r-l+1];
-    for (int i = l; i <= r; i++) {
-        // aux 中索引 i-l 的对象 与 array 中索引 i 的对象一致
-        aux[i-l] = self[i];
-    }
+    NSMutableArray *temp = [NSMutableArray arrayWithCapacity:r-l+1];
     // 初始化，i指向左半部分的起始索引位置l；j指向右半部分起始索引位置mid+1
     int i = l, j = mid + 1;
-    for ( int k = l; k <= r; k++) {
-        if (i > mid) { // 如果左半部分元素已经全部处理完毕
-            self.comparator(nil, nil);
-            self[k] = aux[j - l];
-            j++;
-        }else if(j > r){// 如果右半部分元素已经全部处理完毕
-            self.comparator(nil, nil);
-            self[k] = aux[i - l];
-            i++;
-        }else if(self.comparator(aux[i - l], aux[j - l]) == NSOrderedAscending){// 左半部分所指元素 < 右半部分所指元素
-            self[k] = aux[i - l];
-            i++;
-        }else{
-            self.comparator(nil, nil);
-            self[k] = aux[j - l];
-            j++;
-        }
-        
-        NSMutableArray *mutArray = [NSMutableArray array];
-        [self enumerateObjectsUsingBlock:^(MBBarView *  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            [mutArray addObject:[NSString stringWithFormat:@"%f",obj.frame.size.height]];
-        }];
-        
-        objc_msgSendSortArray(self.vc,func,mutArray);
+    int m = mid, n = r;
+    int k = 0;
+    
+    while (i <= m && j <= n)
+    {
+        if (self.comparator(array[i], array[j]) == NSOrderedAscending)// 左半部分所指元素 < 右半部分所指元素
+            temp[k++] = array[i++];
+        else
+            temp[k++] = array[j++];
     }
-
+    
+    while (i <= m)
+        temp[k++] = array[i++];
+    
+    while (j <= n)
+        temp[k++] = array[j++];
+    
+    for (i = 0; i < k; i++)
+        array[l + i] = temp[i];
 }
 #pragma mark - /**快速排序*/
 - (void)mb_quickSort{
@@ -295,8 +326,8 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
     NSLog(@"数组：%@", str);
 }
 - (NSComparisonResult)compareWithBarOne:(MBBarView *)barOne andBarTwo:(MBBarView *)barTwo {
-    CGFloat height1 = CGRectGetHeight(barOne.frame);
-    CGFloat height2 = CGRectGetHeight(barTwo.frame);
+    CGFloat height1 = CGRectGetHeight(barOne.copiedFrame);
+    CGFloat height2 = CGRectGetHeight(barTwo.copiedFrame);
     if (height1 == height2) {
         return NSOrderedSame;
     }
@@ -306,7 +337,7 @@ void (*objc_msgSendSortArray)(id self,SEL _cmd,id sortArray) = (void *)objc_msgS
 /// 交换两个元素
 - (void)mb_exchangeWithIndexA:(NSInteger)indexA indexB:(NSInteger)indexB{
     if (indexA >= self.count || indexB >= self.count ) {
-        NSLog(@"indexA:%ld,indexB:%ld",indexA,indexB);
+        NSLog(@"indexA:%ld,indexB:%ld",(long)indexA,(long)indexB);
         return;
     }
     id temp = self[indexA];
