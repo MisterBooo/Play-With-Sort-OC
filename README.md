@@ -397,3 +397,5 @@
 * [一本关于排序算法的 GitBook 在线书籍 《十大经典排序算法》，使用 JavaScript & Python & Go 实现](https://github.com/hustcc/JS-Sorting-Algorithm)
 * [在 JavaScript 中学习数据结构与算法](https://juejin.im/post/594dfe795188250d725a220a)
 * [排序动画](https://github.com/JiongXing/JXSort)
+#### 欢迎关注
+![](https://user-gold-cdn.xitu.io/2018/10/29/166bdc7cde6c4fd8?w=258&h=258&f=jpeg&s=27779)
