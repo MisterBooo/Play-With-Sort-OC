@@ -3,7 +3,12 @@
 ![](http://oriq21dog.bkt.clouddn.com/bloc/2017-07-15-Snip20170715_24.png)
 
 > 笔者在学习数据结构与算法时，尝试着将排序算法以动画的形式呈现出来更加方便理解记忆，本文配合[Demo 在Object-C中学习数据结构与算法之排序算法](https://github.com/MisterBooo/Play-With-Sort-OC)阅读更佳。
-> 
+
+> 你可以在公众号 **五分钟学算法** 获取更多数据结构与算法相关的内容
+
+> 公众号回复 **github** 获取十大经典排序动画。
+
+
 
 
 ## 目录
